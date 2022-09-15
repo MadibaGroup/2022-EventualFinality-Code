@@ -285,9 +285,9 @@ func deployRollupCreator(ctx context.Context, l1Reader *headerreader.HeaderReade
 func GenerateRollupConfig(prod bool, wasmModuleRoot common.Hash, rollupOwner common.Address, chainId *big.Int, loserStakeEscrow common.Address) rollupgen.Config {
 	var confirmPeriod uint64
 	if prod {
-		confirmPeriod = 45818
+		confirmPeriod = 1
 	} else {
-		confirmPeriod = 20
+		confirmPeriod = 1
 	}
 	return rollupgen.Config{
 		ConfirmPeriodBlocks:      confirmPeriod,

@@ -29,6 +29,11 @@ contract Outbox is DelegateCallAware, IOutbox {
     mapping(uint256 => bytes32) public spent; // packed spent bitmap
     mapping(bytes32 => bytes32) public roots; // maps root hashes => L2 block hash
 
+
+    //Fast withdrawals Mappings:
+    mapping(uint256 => address) public TransferredToAddress;
+    mapping(uint256 => bool) public isTransferred;
+
     struct L2ToL1Context {
         uint128 l2Block;
         uint128 l1Block;
@@ -272,5 +277,44 @@ contract Outbox is DelegateCallAware, IOutbox {
         bytes32 item
     ) public pure returns (bytes32) {
         return MerkleLib.calculateRoot(proof, path, keccak256(abi.encodePacked(item)));
+    }
+
+    /////////////////////////////////////////////////////
+    function transferSpender (
+        bytes32[] memory proof,
+        uint256 index,
+        address l2Sender,
+        address to,
+        uint256 l2Block,
+        uint256 l1Block,
+        uint256 l2Timestamp,
+        uint256 value,
+        bytes calldata data,
+        address transferTo
+    ) external {
+
+        if (this.isSpent(index)) revert AlreadySpent(index);
+
+        if(!isTransferred[index]){
+            isTransferred[index] = true;
+            require(tx.origin == l2Sender, "Tx origin must be the the address requested for withdrawal in the first exchange");//@audit Change this to L1 using aliasing etc
+        }
+        else{
+            require(tx.origin == TransferredToAddress[index], "Only the last delegated address can transfer the deligation");
+        }
+        bytes32 userTx = calculateItemHash(
+            l2Sender,
+            to,
+            l2Block,
+            l1Block,
+            l2Timestamp,
+            value,
+            data
+        );
+
+        // Hash the leaf an extra time to prove it's a leaf
+        bytes32 calcRoot = calculateMerkleRoot(proof, index, userTx);
+        if (roots[calcRoot] == bytes32(0)) revert UnknownRoot(calcRoot);
+        TransferredToAddress[index] = transferTo;
     }
 }
