@@ -621,6 +621,7 @@ abstract contract RollupCore is IRollupCore, PausableUpgradeable {
             prevNode.childCreated(nodeNum);
 
             nodeCreated(memoryFrame.node);
+            outbox.addToPendingAssertions(latestNodeCreated());
         }
 
         emit NodeCreated(

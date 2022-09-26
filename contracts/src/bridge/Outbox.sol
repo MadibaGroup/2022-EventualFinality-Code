@@ -29,10 +29,17 @@ contract Outbox is DelegateCallAware, IOutbox {
     mapping(uint256 => bytes32) public spent; // packed spent bitmap
     mapping(bytes32 => bytes32) public roots; // maps root hashes => L2 block hash
 
+    enum State{ Pending }
 
     //Fast withdrawals Mappings:
     mapping(uint256 => address) public TransferredToAddress;
     mapping(uint256 => bool) public isTransferred;
+    mapping(uint256 => State) public pendingAssertions;
+    
+
+    function addToPendingAssertions(uint256 _id) external {
+        pendingAssertions[_id] = State.Pending;
+    }
 
     struct L2ToL1Context {
         uint128 l2Block;
@@ -190,8 +197,13 @@ contract Outbox is DelegateCallAware, IOutbox {
             outputId: bytes32(outputId)
         });
 
-        // set and reset vars around execution so they remain valid during call
-        executeBridgeCall(to, value, data);
+        //checking if it's ETH transfer
+        if( isTransferred[outputId] == true){
+            executeBridgeCall(TransferredToAddress[outputId], value, data);
+        } 
+        else {
+            executeBridgeCall(to, value, data);  
+        }
 
         context = prevContext;
     }

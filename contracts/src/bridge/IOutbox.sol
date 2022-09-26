@@ -16,6 +16,8 @@ interface IOutbox {
         uint256 transactionIndex
     );
 
+    function addToPendingAssertions(uint256) external;
+
     function rollup() external view returns (address); // the rollup contract
 
     function bridge() external view returns (IBridge); // the bridge contract
@@ -45,6 +47,8 @@ interface IOutbox {
 
     /// @return outputId returns the unique output identifier of the L2 to L1 tx or 0 if no L2 to L1 transaction is active
     function l2ToL1OutputId() external view returns (bytes32);
+
+
 
     /**
      * @notice Executes a messages in an Outbox entry.
