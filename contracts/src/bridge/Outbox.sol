@@ -35,7 +35,11 @@ contract Outbox is DelegateCallAware, IOutbox {
     mapping(uint256 => address) public TransferredToAddress;
     mapping(uint256 => bool) public isTransferred;
     mapping(uint256 => State) public pendingAssertions;
+
     
+    function checkExitOwner(uint256 index) external view returns (address){
+        return(TransferredToAddress[index]);
+    }
 
     function addToPendingAssertions(uint256 _id) external {
         pendingAssertions[_id] = State.Pending;
@@ -307,12 +311,13 @@ contract Outbox is DelegateCallAware, IOutbox {
 
         if (this.isSpent(index)) revert AlreadySpent(index);
 
-        if(!isTransferred[index]){
+        if(isTransferred[index] == false)
+        {
             isTransferred[index] = true;
-            require(tx.origin == l2Sender, "Tx origin must be the the address requested for withdrawal in the first exchange");//@audit Change this to L1 using aliasing etc
+            require(msg.sender == to, "Tx origin must be the the address requested for withdrawal in the first exchange");//@audit Change this to L1 using aliasing etc
         }
         else{
-            require(tx.origin == TransferredToAddress[index], "Only the last delegated address can transfer the deligation");
+            require(msg.sender == TransferredToAddress[index], "Only the last delegated address can transfer the deligation");
         }
         bytes32 userTx = calculateItemHash(
             l2Sender,

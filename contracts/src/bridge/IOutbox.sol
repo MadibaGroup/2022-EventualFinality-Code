@@ -18,6 +18,21 @@ interface IOutbox {
 
     function addToPendingAssertions(uint256) external;
 
+    function checkExitOwner(uint256) external view returns (address);
+
+    function transferSpender(
+        bytes32[] calldata proof,
+        uint256 index,
+        address l2Sender,
+        address to,
+        uint256 l2Block,
+        uint256 l1Block,
+        uint256 l2Timestamp,
+        uint256 value,
+        bytes calldata data,
+        address
+    ) external;
+
     function rollup() external view returns (address); // the rollup contract
 
     function bridge() external view returns (IBridge); // the bridge contract
