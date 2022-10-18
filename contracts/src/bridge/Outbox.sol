@@ -32,18 +32,18 @@ contract Outbox is DelegateCallAware, IOutbox {
     enum State{ Pending }
 
     //Fast withdrawals Mappings:
-    mapping(uint256 => address) public TransferredToAddress;
+    mapping(uint256 => address) public transferredToAddress;
     mapping(uint256 => bool) public isTransferred;
-    mapping(uint256 => State) public pendingAssertions;
+    //mapping(uint256 => State) public pendingAssertions;
 
     
-    function checkExitOwner(uint256 index) external view returns (address){
-        return(TransferredToAddress[index]);
-    }
+    //function checkExitOwner(uint256 index) external view returns (address){
+        //return(TransferredToAddress[index]);
+    //}
 
-    function addToPendingAssertions(uint256 _id) external {
-        pendingAssertions[_id] = State.Pending;
-    }
+    //function addToPendingAssertions(uint256 _id) external {
+        //pendingAssertions[_id] = State.Pending;
+    //}
 
     struct L2ToL1Context {
         uint128 l2Block;
@@ -203,12 +203,12 @@ contract Outbox is DelegateCallAware, IOutbox {
 
         //checking if it's ETH transfer
         if( isTransferred[outputId] == true){
-            executeBridgeCall(TransferredToAddress[outputId], value, data);
+            executeBridgeCall(transferredToAddress[outputId], value, data);
         } 
         else {
             executeBridgeCall(to, value, data);  
         }
-
+        //executeBridgeCall(to, value, data);  
         context = prevContext;
     }
 
@@ -317,7 +317,7 @@ contract Outbox is DelegateCallAware, IOutbox {
             require(msg.sender == to, "Tx origin must be the the address requested for withdrawal in the first exchange");//@audit Change this to L1 using aliasing etc
         }
         else{
-            require(msg.sender == TransferredToAddress[index], "Only the last delegated address can transfer the deligation");
+            require(msg.sender == transferredToAddress[index], "Only the last delegated address can transfer the deligation");
         }
         bytes32 userTx = calculateItemHash(
             l2Sender,
@@ -332,6 +332,6 @@ contract Outbox is DelegateCallAware, IOutbox {
         // Hash the leaf an extra time to prove it's a leaf
         bytes32 calcRoot = calculateMerkleRoot(proof, index, userTx);
         if (roots[calcRoot] == bytes32(0)) revert UnknownRoot(calcRoot);
-        TransferredToAddress[index] = transferTo;
+        transferredToAddress[index] = transferTo;
     }
 }

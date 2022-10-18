@@ -16,9 +16,9 @@ interface IOutbox {
         uint256 transactionIndex
     );
 
-    function addToPendingAssertions(uint256) external;
+    //function addToPendingAssertions(uint256) external;
 
-    function checkExitOwner(uint256) external view returns (address);
+    //function checkExitOwner(uint256) external view returns (address);
 
     function transferSpender(
         bytes32[] calldata proof,
