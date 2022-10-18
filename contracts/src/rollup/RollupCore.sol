@@ -280,6 +280,7 @@ abstract contract RollupCore is IRollupCore, PausableUpgradeable {
         _firstUnresolvedNode = nodeNum + 1;
 
         emit NodeConfirmed(nodeNum, blockHash, sendRoot);
+        outbox.markAsConfirmed(nodeNum);
     }
 
     /**
@@ -621,7 +622,7 @@ abstract contract RollupCore is IRollupCore, PausableUpgradeable {
             prevNode.childCreated(nodeNum);
 
             nodeCreated(memoryFrame.node);
-            //outbox.addToPendingAssertions(latestNodeCreated());
+            outbox.markAsPending(latestNodeCreated());
         }
 
         emit NodeCreated(

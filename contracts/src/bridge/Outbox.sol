@@ -29,21 +29,23 @@ contract Outbox is DelegateCallAware, IOutbox {
     mapping(uint256 => bytes32) public spent; // packed spent bitmap
     mapping(bytes32 => bytes32) public roots; // maps root hashes => L2 block hash
 
-    enum State{ Pending }
+    enum State { Pending, Confirmed }
 
     //Fast withdrawals Mappings:
     mapping(uint256 => address) public transferredToAddress;
     mapping(uint256 => bool) public isTransferred;
-    //mapping(uint256 => State) public pendingAssertions;
+    mapping(uint256 => State) public assertionAtState;
 
     
-    function checkExitOwner(uint256 index) external view returns (address){
-        return(transferredToAddress[index]);
+    // function checkExitOwner(uint256 index) external view returns (address){
+    //     return(transferredToAddress[index]);
+    // }
+    function markAsConfirmed(uint256 _id) external {
+        assertionAtState[_id] = State.Confirmed;
     }
-
-    //function addToPendingAssertions(uint256 _id) external {
-        //pendingAssertions[_id] = State.Pending;
-    //}
+    function markAsPending(uint256 _id) external {
+        assertionAtState[_id] = State.Pending;
+    }
 
     struct L2ToL1Context {
         uint128 l2Block;
