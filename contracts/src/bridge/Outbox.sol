@@ -37,9 +37,9 @@ contract Outbox is DelegateCallAware, IOutbox {
     //mapping(uint256 => State) public pendingAssertions;
 
     
-    //function checkExitOwner(uint256 index) external view returns (address){
-        //return(TransferredToAddress[index]);
-    //}
+    function checkExitOwner(uint256 index) external view returns (address){
+        return(transferredToAddress[index]);
+    }
 
     //function addToPendingAssertions(uint256 _id) external {
         //pendingAssertions[_id] = State.Pending;
